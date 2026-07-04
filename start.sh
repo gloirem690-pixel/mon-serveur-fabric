@@ -1,20 +1,13 @@
-# Utiliser une image Java 21 maintenue par Eclipse Temurin
-FROM eclipse-temurin:21-jre-slim
+#!/bin/bash
 
-# Installer Node.js
-RUN apt-get update && apt-get install -y curl wget && \
-    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-    apt-get install -y nodejs && \
-    rm -rf /var/lib/apt/lists/*
+cd server-files
 
-WORKDIR /app
+if [ ! -f "server.jar" ]; then
+    echo "Téléchargement de server.jar..."
+    wget -O server.jar https://piston-data.mojang.com/v1/objects/59353fb40c36d304f2035d51e7d6e6baa98dc05c/server.jar
+fi
 
-COPY package*.json ./
-RUN npm install
+java -Xmx2048M -Xms1024M -jar fabric-server-launch.jar nogui &
 
-COPY --chmod=755 start.sh /app/start.sh
-COPY . .
-
-EXPOSE 8080
-
-CMD ["sh", "/app/start.sh"]
+cd ..
+node server.js
