@@ -1,13 +1,27 @@
-#!/bin/bash
+# Utiliser une image Java 21 officielle et maintenue
+FROM eclipse-temurin:21-jre-slim
 
-cd server-files
+# Installer Node.js (pour le panel)
+RUN apt-get update && apt-get install -y curl wget && \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
+    rm -rf /var/lib/apt/lists/*
 
-if [ ! -f "server.jar" ]; then
-    echo "Téléchargement de server.jar..."
-    wget -O server.jar https://piston-data.mojang.com/v1/objects/59353fb40c36d304f2035d51e7d6e6baa98dc05c/server.jar
-fi
+# Définir le répertoire de travail
+WORKDIR /app
 
-java -Xmx2048M -Xms1024M -jar fabric-server-launch.jar nogui &
+# Copier les fichiers de dépendances Node.js
+COPY package*.json ./
+RUN npm install
 
-cd ..
-node server.js
+# Copier le script avec les bonnes permissions
+COPY --chmod=755 start.sh /app/start.sh
+
+# Copier tout le reste du projet
+COPY . .
+
+# Exposer le port du panel
+EXPOSE 8080
+
+# Lancer le script de démarrage
+CMD ["sh", "/app/start.sh"]
