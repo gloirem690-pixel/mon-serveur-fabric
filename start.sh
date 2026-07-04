@@ -16,9 +16,14 @@ fi
 
 # 3. Télécharger ASM et les autres bibliothèques
 echo "Téléchargement des bibliothèques Fabric..."
+
 mkdir -p libraries/org/ow2/asm/asm/9.7.1/
 wget -O libraries/org/ow2/asm/asm/9.7.1/asm-9.7.1.jar https://repo1.maven.org/maven2/org/ow2/asm/asm/9.7.1/asm-9.7.1.jar
+
+mkdir -p libraries/org/ow2/asm/asm-commons/9.7.1/
 wget -O libraries/org/ow2/asm/asm-commons/9.7.1/asm-commons-9.7.1.jar https://repo1.maven.org/maven2/org/ow2/asm/asm-commons/9.7.1/asm-commons-9.7.1.jar
+
+mkdir -p libraries/org/ow2/asm/asm-tree/9.7.1/
 wget -O libraries/org/ow2/asm/asm-tree/9.7.1/asm-tree-9.7.1.jar https://repo1.maven.org/maven2/org/ow2/asm/asm-tree/9.7.1/asm-tree-9.7.1.jar
 
 # 4. Lancer le serveur avec les bibliothèques dans le classpath
