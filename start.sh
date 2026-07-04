@@ -2,19 +2,25 @@
 
 cd server-files
 
-# 1. Télécharger le serveur vanilla si absent
+# Télécharger l'installeur Fabric si absent
+if [ ! -f "fabric-installer.jar" ]; then
+    echo "Téléchargement de l'installeur Fabric..."
+    wget -O fabric-installer.jar https://maven.fabricmc.net/net/fabricmc/fabric-installer/0.11.2/fabric-installer-0.11.2.jar
+fi
+
+# Télécharger le serveur vanilla si absent
 if [ ! -f "server.jar" ]; then
     echo "Téléchargement de server.jar..."
     wget -O server.jar https://piston-data.mojang.com/v1/objects/59353fb40c36d304f2035d51e7d6e6baa98dc05c/server.jar
 fi
 
-# 2. Télécharger le lanceur Fabric si absent
-if [ ! -f "fabric-server-launch.jar" ]; then
-    echo "Téléchargement de fabric-server-launch.jar..."
-    wget -O fabric-server-launch.jar https://maven.fabricmc.net/net/fabricmc/fabric-loader/0.19.3/fabric-loader-0.19.3.jar
+# Générer le lanceur Fabric avec l'installeur
+if [ ! -f "fabric-server-launch.jar" ] || [ ! -d ".fabric" ]; then
+    echo "Génération du lanceur Fabric..."
+    java -jar fabric-installer.jar server -mcversion 1.21.1 -loader 0.19.3 -downloadMinecraft
 fi
 
-# 3. Lancer le serveur avec la commande standard
+# Lancer le serveur
 echo "Lancement du serveur Fabric..."
 java -Xmx2048M -Xms1024M -jar fabric-server-launch.jar nogui &
 
