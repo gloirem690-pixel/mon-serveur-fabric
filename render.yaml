@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: mc-fabric-panel
+    env: docker
+    repo: https://github.com/ton-user/mon-serveur-fabric
+    branch: main
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: RCON_PASSWORD
+        generateValue: true
+      - key: PORT
+        value: 8080
+    disk:
+      name: mc-data
+      mountPath: /app/server-files
+      sizeGB: 2
