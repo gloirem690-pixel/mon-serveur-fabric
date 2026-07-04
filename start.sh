@@ -14,21 +14,9 @@ if [ ! -f "fabric-server-launch.jar" ]; then
     wget -O fabric-server-launch.jar https://maven.fabricmc.net/net/fabricmc/fabric-loader/0.19.3/fabric-loader-0.19.3.jar
 fi
 
-# 3. Télécharger ASM et les autres bibliothèques
-echo "Téléchargement des bibliothèques Fabric..."
-
-mkdir -p libraries/org/ow2/asm/asm/9.7.1/
-wget -O libraries/org/ow2/asm/asm/9.7.1/asm-9.7.1.jar https://repo1.maven.org/maven2/org/ow2/asm/asm/9.7.1/asm-9.7.1.jar
-
-mkdir -p libraries/org/ow2/asm/asm-commons/9.7.1/
-wget -O libraries/org/ow2/asm/asm-commons/9.7.1/asm-commons-9.7.1.jar https://repo1.maven.org/maven2/org/ow2/asm/asm-commons/9.7.1/asm-commons-9.7.1.jar
-
-mkdir -p libraries/org/ow2/asm/asm-tree/9.7.1/
-wget -O libraries/org/ow2/asm/asm-tree/9.7.1/asm-tree-9.7.1.jar https://repo1.maven.org/maven2/org/ow2/asm/asm-tree/9.7.1/asm-tree-9.7.1.jar
-
-# 4. Lancer le serveur avec les bibliothèques dans le classpath
+# 3. Lancer le serveur avec la commande standard
 echo "Lancement du serveur Fabric..."
-java -Xmx2048M -Xms1024M -cp "fabric-server-launch.jar:libraries/*" net.fabricmc.loader.impl.launch.server.FabricServerLauncher nogui &
+java -Xmx2048M -Xms1024M -jar fabric-server-launch.jar nogui &
 
 cd ..
 node server.js
