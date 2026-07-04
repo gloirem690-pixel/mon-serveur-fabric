@@ -1,27 +1,13 @@
-# Image de base avec Java 21
-FROM openjdk:21-slim
+#!/bin/bash
 
-# Installer Node.js (pour le panel)
-RUN apt-get update && apt-get install -y curl && \
-    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-    apt-get install -y nodejs && \
-    rm -rf /var/lib/apt/lists/*
+cd server-files
 
-# Définir le répertoire de travail
-WORKDIR /app
+if [ ! -f "server.jar" ]; then
+    echo "Téléchargement de server.jar..."
+    wget -O server.jar https://piston-data.mojang.com/v1/objects/59353fb40c36d304f2035d51e7d6e6baa98dc05c/server.jar
+fi
 
-# Copier les fichiers de dépendances Node.js
-COPY package*.json ./
-RUN npm install
+java -Xmx2048M -Xms1024M -jar fabric-server-launch.jar nogui &
 
-# Copier tout le reste du projet
-COPY . .
-
-# Donner les droits d'exécution
-RUN chmod +x start.sh
-
-# Exposer le port du panel
-EXPOSE 8080
-
-# Lancer le script de démarrage
-CMD ["sh", "start.sh"]
+cd ..
+node server.js
