@@ -1,9 +1,9 @@
-FROM eclipse-temurin:21-jre-slim
+FROM amazoncorretto:21
 
-RUN apt-get update && apt-get install -y curl wget && \
-    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-    apt-get install -y nodejs && \
-    rm -rf /var/lib/apt/lists/*
+RUN yum install -y curl wget tar gzip && \
+    curl -fsSL https://rpm.nodesource.com/setup_20.x | bash - && \
+    yum install -y nodejs && \
+    yum clean all
 
 WORKDIR /app
 
