@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>MC Admin Panel</title>
+    <style>
+        body { font-family: Arial; background: #1e1e2e; color: #cdd6f4; padding: 20px; }
+        .console { background: #111; padding: 10px; height: 300px; overflow-y: scroll; font-family: monospace; white-space: pre-wrap; border-radius: 5px; }
+        input, button { padding: 8px; margin: 5px; }
+        .flex { display: flex; flex-wrap: wrap; gap: 20px; }
+        .card { background: #313244; padding: 15px; border-radius: 8px; flex: 1; min-width: 200px; }
+        .card h3 { margin-top: 0; }
+    </style>
+</head>
+<body>
+    <h1>📦 Panel du serveur Minecraft</h1>
+    <div class="flex">
+        <div class="card">
+            <h3>Console</h3>
+            <div id="console" class="console"></div>
+            <input type="text" id="cmdInput" placeholder="Commande...">
+            <button onclick="sendCommand()">Envoyer</button>
+        </div>
+        <div class="card">
+            <h3>Joueurs en ligne</h3>
+            <div id="playerList"></div>
+            <button onclick="refreshPlayers()">Rafraîchir</button>
+        </div>
+        <div class="card">
+            <h3>OP</h3>
+            <input type="text" id="opPlayer" placeholder="Pseudo">
+            <button onclick="addOp()">Ajouter OP</button>
+            <button onclick="removeOp()">Retirer OP</button>
+        </div>
+        <div class="card">
+            <h3>Ban</h3>
+            <input type="text" id="banPlayer" placeholder="Pseudo">
+            <input type="text" id="banReason" placeholder="Raison">
+            <button onclick="banPlayer()">Bannir</button>
+            <button onclick="unbanPlayer()">Débannir</button>
+        </div>
+        <div class="card">
+            <h3>IP Ban</h3>
+            <input type="text" id="banIp" placeholder="IP">
+            <button onclick="banIp()">Bannir IP</button>
+            <button onclick="unbanIp()">Débannir IP</button>
+        </div>
+        <div class="card">
+            <h3>Whitelist</h3>
+            <input type="text" id="wlPlayer" placeholder="Pseudo">
+            <button onclick="addWhitelist()">Ajouter</button>
+            <button onclick="removeWhitelist()">Retirer</button>
+        </div>
+        <div class="card">
+            <h3>Statistiques / Inventaire</h3>
+            <input type="text" id="uuidPlayer" placeholder="UUID (ex: afd85001...)" size="20">
+            <button onclick="getStats()">Stats</button>
+            <button onclick="getInventory()">Inventaire</button>
+            <div id="statsResult"></div>
+        </div>
+        <div class="card">
+            <button onclick="stopServer()" style="background: red; color: white;">Arrêter le serveur</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        socket.on('log', (line) => {
+            const consoleDiv = document.getElementById('console');
+            consoleDiv.textContent += line + '\n';
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        });
+
+        function sendCommand() {
+            const cmd = document.getElementById('cmdInput').value;
+            if (!cmd) return;
+            fetch('/api/command', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cmd })
+            })
+            .then(r => r.json())
+            .then(data => {
+                const consoleDiv = document.getElementById('console');
+                consoleDiv.textContent += '> ' + cmd + '\n' + (data.response || data.error) + '\n';
+                document.getElementById('cmdInput').value = '';
+            });
+        }
+
+        function refreshPlayers() {
+            fetch('/api/players')
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('playerList').innerHTML = data.players.map(p => `<div>${p}</div>`).join('');
+                });
+        }
+
+        function addOp() {
+            const player = document.getElementById('opPlayer').value;
+            if (!player) return;
+            fetch('/api/ops/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ player }) })
+                .then(r => r.json())
+                .then(data => alert(data.success ? 'OP ajouté' : 'Erreur'));
+        }
+
+        function removeOp() {
+            const player = document.getElementById('opPlayer').value;
+            if (!player) return;
+            fetch('/api/ops/remove', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ player }) })
+                .then(r => r.json())
+                .then(data => alert(data.success ? 'OP retiré' : 'Erreur'));
+        }
+
+        function banPlayer() {
+            const player = document.getElementById('banPlayer').value;
+            const reason = document.getElementById('banReason').value;
+            if (!player) return;
+            fetch('/api/ban', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ player, reason }) })
+                .then(r => r.json())
+                .then(data => alert(data.success ? 'Banni' : 'Erreur'));
+        }
+
+        function unbanPlayer() {
+            const player = document.getElementById('banPlayer').value;
+            if (!player) return;
+            fetch('/api/unban', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ player }) })
+                .then(r => r.json())
+                .then(data => alert(data.success ? 'Débanni' : 'Erreur'));
+        }
+
+        function banIp() {
+            const ip = document.getElementById('banIp').value;
+            if (!ip) return;
+            fetch('/api/ban-ip', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ip }) })
+                .then(r => r.json())
+                .then(data => alert(data.success ? 'IP bannie' : 'Erreur'));
+        }
+
+        function unbanIp() {
+            const ip = document.getElementById('banIp').value;
+            if (!ip) return;
+            fetch('/api/unban-ip', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ip }) })
+                .then(r => r.json())
+                .then(data => alert(data.success ? 'IP débannie' : 'Erreur'));
+        }
+
+        function addWhitelist() {
+            const player = document.getElementById('wlPlayer').value;
+            if (!player) return;
+            fetch('/api/whitelist/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ player }) })
+                .then(r => r.json())
+                .then(data => alert(data.success ? 'Ajouté à la whitelist' : 'Erreur'));
+        }
+
+        function removeWhitelist() {
+            const player = document.getElementById('wlPlayer').value;
+            if (!player) return;
+            fetch('/api/whitelist/remove', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ player }) })
+                .then(r => r.json())
+                .then(data => alert(data.success ? 'Retiré de la whitelist' : 'Erreur'));
+        }
+
+        function stopServer() {
+            if (!confirm('Arrêter le serveur ?')) return;
+            fetch('/api/stop', { method: 'POST' })
+                .then(r => r.json())
+                .then(data => alert(data.success ? 'Serveur arrêté' : 'Erreur'));
+        }
+
+        function getStats() {
+            const uuid = document.getElementById('uuidPlayer').value;
+            if (!uuid) return alert('Entrez un UUID');
+            fetch(`/api/stats/${uuid}`)
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('statsResult').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                })
+                .catch(() => document.getElementById('statsResult').innerHTML = 'Aucune stat');
+        }
+
+        function getInventory() {
+            const uuid = document.getElementById('uuidPlayer').value;
+            if (!uuid) return alert('Entrez un UUID');
+            fetch(`/api/inventory/${uuid}`)
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('statsResult').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                })
+                .catch(() => document.getElementById('statsResult').innerHTML = 'Aucun inventaire');
+        }
+
+        // Refresh automatique des joueurs toutes les 10s
+        setInterval(refreshPlayers, 10000);
+        refreshPlayers();
+    </script>
+</body>
+</html>
