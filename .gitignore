@@ -5,3 +5,4 @@ server-files/logs/
 server-files/*.log
 *.dat
 *.jar
+server.jar
